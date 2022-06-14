@@ -1,0 +1,9 @@
+{
+	"compilerOptions": {
+		"target": "ESNext",
+		"module": "commonjs",
+		"watch": true,
+		"rootDir": "./scripts/src",
+		"outDir": "./scripts/js"
+	}
+}
