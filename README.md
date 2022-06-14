@@ -1,1 +1,1 @@
-A demonstration intended to illustrate the technique used in perspective drawing
+This project uses HTML, CSS, and JS to create an interactive demonstration of the techniques used in perspective drawing. Sorry about slacking during class, Mr. Hanssen.
