@@ -1,5 +1,6 @@
 <!DOCTYPE HTML>
 
+<html>
 <head>
 
 	<title>Perspective Drawing Demo</title>
@@ -10,7 +11,7 @@
 </head>
 
 <header>
-	Welcome! This tool can be used to demonstrate the principles associated with drawing in perspective.
+	WELCOME! THIS TOOL CAN BE USED TO DEMONSTRATE THE PRINCIPLES ASSOCIATED WITH DRAWING IN PERSPECTIVE.
 </header>
 
 <canvas id="viewer">
@@ -18,14 +19,17 @@
 </canvas>
 
 <div id="options">
-	<label>PERSPECTIVE MODE</label>
-	<button id="1PP">ONE-POINT</button>
-	<button id="2PP">TWO-POINT</button>
-	<button id="3PP">THREE-POINT</button>
-	
-	<br>
-	
-	<label>GUIDES</label>
-	<button id="guides_on">ON</button>
-	<button id="guides_off">OFF</button>
+	<div id="perspectives">
+		<label id="perspective_mode_label">PERSPECTIVE MODE:</label>
+		<button class="perspective_button" id="1PP">ONE-POINT</button>
+		<button class="perspective_button" id="2PP">TWO-POINT</button>
+		<button class="perspective_button" id="3PP">THREE-POINT</button>
+	</div>
+
+	<div id="guides">
+		<label id="guides_label">GUIDES:</label>
+		<button class="guide_button" id="guides_on">ON</button>
+		<button class="guide_button" id="guides_off">OFF</button>
+	</div>
 </div>
+</html>
