@@ -5,9 +5,9 @@ class Point {
         this.x = x;
         this.y = y;
     }
-    distanceTo(other) {
-        let xDiff = Math.abs(this.x - other.x);
-        let yDiff = Math.abs(this.y - other.y);
+    static distanceBetween(a, b) {
+        let xDiff = Math.abs(a.x - b.x);
+        let yDiff = Math.abs(a.y - b.y);
         return Math.sqrt(Math.pow(xDiff, 2) + Math.pow(yDiff, 2));
     }
 }
@@ -19,6 +19,12 @@ class LineSegment {
         this.end = end;
     }
     length() {
-        return this.start.distanceTo(this.end);
+        return Point.distanceBetween(this.start, this.end);
+    }
+}
+class Quad {
+    points;
+    constructor(points) {
+        this.points = points;
     }
 }
