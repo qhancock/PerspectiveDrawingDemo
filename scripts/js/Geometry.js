@@ -11,6 +11,15 @@ export class Point {
 		return this.x == other.x && this.y == other.y;
 	}
 
+	translate(dx, dy) {
+		this.x += dx;
+		this.y += dy;
+	}
+
+	getRelativePoint(dx, dy) {
+		return new Point(this.x + dx, this.y + dy);
+	}
+
 	static dx(a, b) {
 		return b.x - a.x;
 	}
@@ -45,13 +54,10 @@ export class LineSegment {
 	}
 
 	contains(point) {
-		let segSqStart = Point.distSq(this.start, point);
-		let segSqEnd = Point.distSq(this.end, point);
+		let distToStart = Point.distance(this.start, point);
+		let distToEnd = Point.distance(this.end, point);
 
-
-		let segSq = this.segSq();
-
-		return segSqStart + segSqEnd == segSq;
+		return Math.pow((distToStart + distToEnd), 2) == this.segSq();
 	}
 
 	segSq() {
@@ -68,6 +74,11 @@ export class LineSegment {
 
 	y() {
 		return Point.dy(this.start, this.end);
+	}
+
+	translate(dx, dy) {
+		this.start.translate(dx, dy);
+		this.end.translate(dx, dy);
 	}
 
 	equals(other) {
@@ -96,27 +107,33 @@ export class LineSegment {
 
 export class Polygon {
 	points;
-	segments;
+	edges;
 	numPoints;
 
 	constructor(points) {
 		this.points = points;
 		this.numPoints = this.points.length;
-		this.segments = new Array(this.numPoints);
+		this.edges = new Array(this.numPoints);
 
 		for (let point = 0; point < this.points.length; point++) {
 			let currentPoint = this.points[point % this.points.length];
 			let nextPoint = this.points[(point + 1) % this.points.length];
 
 			let currentSegment = new LineSegment(currentPoint, nextPoint);
-			this.segments[point] = currentSegment;
+			this.edges[point] = currentSegment;
+		}
+	}
+
+	translate(dx, dy) {
+		for(let point of this.points) {
+			point.translate(dx, dy);
 		}
 	}
 
 	intersects(cross) {
 		let intersects = [];
 
-		for (let seg of this.segments) {
+		for (let seg of this.edges) {
 			let intersect = LineSegment.intersect(seg, cross);
 			if (intersect != undefined) {
 				intersects.push(intersect);
@@ -124,5 +141,60 @@ export class Polygon {
 		}
 
 		return intersects;
+	}
+
+	onEdge(point) {
+		for(let edge of this.edges) {
+			if(edge.contains(point)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	contains(point) {
+
+		let farthestRightPoint;
+
+		for(let point of this.points) {
+			if(farthestRightPoint==null || point.x > farthestRightPoint.x) {
+				farthestRightPoint = point;
+			}
+		}
+
+		let exitPoint = new Point(farthestRightPoint.x+1, point.y);
+
+		let exiter = new LineSegment(point, exitPoint);
+		let passPoints = this.intersects(exiter);
+		let passes = passPoints.length;
+		let startedIn = passes%2 == 1;
+
+		return startedIn;
+
+	}
+
+}
+
+export class Square extends Polygon {
+	side;
+	center;
+
+	constructor(center, side) {
+
+		let half = side/2;
+		let points = [];
+		points.push(center.getRelativePoint(-half, half));
+		points.push(center.getRelativePoint(-half, -half));
+		points.push(center.getRelativePoint(half, -half));
+		points.push(center.getRelativePoint(half, half));
+
+		super(points);
+		
+		this.side = side;
+		this.center = center;
+	}
+
+	contains(point) {
+		return point.x>this.points[1].x && point.x<this.points[3].x && point.y>this.points[1].y && point.y<this.points[3].y;
 	}
 }
