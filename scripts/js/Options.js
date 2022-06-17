@@ -5,7 +5,7 @@ export var perspectiveButtons;
 export var guidesToggleButtons;
 export var xrayToggleButtons;
 
-export class OptionButtonSet {
+class OptionButtonSet {
 	selectedButton;
 	buttons;
 
@@ -16,7 +16,7 @@ export class OptionButtonSet {
 
 		for (let button of buttons) {
 			if (button != null) {
-				button.addEventListener("click", function () { thisSet.select(this) }, false);
+				button.addEventListener("click", function () { thisSet.select(this) });
 			}
 		}
 	}
@@ -55,21 +55,22 @@ export function initOptions() {
 		perspectiveButtonList[persp].addEventListener('click', function () { viewer.setPerspective(persp) });
 	}
 	perspectiveButtons = new OptionButtonSet(perspectiveButtonList);
-	perspectiveButtons.select(perspectiveButtons.buttons[1]);
 
 	//initialize guides options
-	let guidesOn = document.getElementById("guides_on") ;
-	guidesOn.addEventListener("click", function () { viewer.toggleGuides(true) });
-	let guidesOff = document.getElementById("guides_off") ;
-	guidesOff.addEventListener("click", function () { viewer.toggleGuides(false) });
-	guidesToggleButtons = new OptionButtonSet([guidesOn, guidesOff]);
-	guidesToggleButtons.select(guidesOn);
+	let guidesOn = document.getElementById("guides_on");
+	let guidesOff = document.getElementById("guides_off");
 
+	guidesOn?.addEventListener("click", function () { viewer.toggleGuides(true) });
+	guidesOff?.addEventListener("click", function () { viewer.toggleGuides(false) });
+
+	guidesToggleButtons = new OptionButtonSet([guidesOn, guidesOff]);
 
 	//initialize xray options
 	let xrayOn = document.getElementById("xray_on") ;
 	let xrayOff = document.getElementById("xray_off") ;
-	xrayToggleButtons = new OptionButtonSet([xrayOn, xrayOff]);
-	xrayToggleButtons.select(xrayOn);
 
+	xrayOn?.addEventListener("click", function() {viewer.toggleXray(true)});
+	xrayOff?.addEventListener("click", function() {viewer.toggleXray(false)});
+
+	xrayToggleButtons = new OptionButtonSet([xrayOn, xrayOff]);
 }
