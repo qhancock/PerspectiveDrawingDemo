@@ -1,30 +1,28 @@
 import { LineSegment, Point, Square, Polygon } from "./Geometry.js";
-import { viewer } from "./PerspectiveDrawingDemo.js";
+import { getViewer } from "./PerspectiveDrawingDemo.js";
 
 var vp;
-var face;
-var backFace;
+export var face;
 
 export function reset() {
-	vp = viewer.getCenter().getRelativePoint(0, -viewer.getHeight()/6);
-	let faceSide = Math.sqrt(viewer.getArea())/10;
-	let faceCenter = viewer.getCenter().getRelativePoint(-200, viewer.getHeight()/6);
+	vp = getViewer().getCenter().getRelativePoint(0, -getViewer().getHeight()/6);
+	let faceSide = Math.sqrt(getViewer().getArea())/10;
+	let faceCenter = getViewer().getCenter().getRelativePoint(100, getViewer().getHeight()/6);
 	face = new Square(faceCenter, faceSide);
-	computeBackFace();
 }
 
 export function getViewerData() {
 
 	let nonFaceEdges = [];
 
+	for(let backEdge of getBackFace().getEdges()) {
+		nonFaceEdges.push(backEdge);
+	}
 	for(let depthEdge of getCubeDepthEdges()) {
 		nonFaceEdges.push(depthEdge);
 	}
-	for(let backEdge of backFace.edges) {
-		nonFaceEdges.push(backEdge);
-	}
 
-	let edges = face.edges;
+	let edges = face.getEdges();
 	let xrayEdges = [];
 
 	for(let edge of nonFaceEdges) {
@@ -61,27 +59,27 @@ export function getViewerData() {
 }
 
 function backVertexRayScalar(faceVertex) {
-	let sideFovRatio = 2/Math.PI * Math.atan(face.side/Point.distance(face.center, vp));
+	let sideFovRatio = 2/Math.PI * Math.atan(face.side/(Point.distance(face.center, vp)+50));
 	return 1 - sideFovRatio;
 }
 function backVertex(faceVertex) {
 	let scalar = backVertexRayScalar(face.center);
 	return vp.getRelativePoint(scalar*Point.dx(vp, faceVertex), scalar*Point.dy(vp, faceVertex));
 }
-function computeBackFace() {
+function getBackFace() {
 	let backFacePoints = [];
 
 	for(let faceVertex of face.points) {
 		backFacePoints.push(backVertex(faceVertex));
 	}
 
-	backFace = new Polygon(backFacePoints);
+	return new Polygon(backFacePoints);
 }
 function getCubeDepthEdges() {
 	let cubeDepthSegments = [];
 
 	for(let vIndex in face.points) {
-		cubeDepthSegments.push(new LineSegment(face.points[vIndex], backFace.points[vIndex]));
+		cubeDepthSegments.push(new LineSegment(face.points[vIndex], getBackFace().points[vIndex]));
 	}
 
 	return cubeDepthSegments;
@@ -89,8 +87,8 @@ function getCubeDepthEdges() {
 function getGuides() {
 	let guideSegments = [];
 
-	for(let vIndex in backFace.points) {
-		guideSegments.push(new LineSegment(backFace.points[vIndex], vp));
+	for(let vIndex in getBackFace().points) {
+		guideSegments.push(new LineSegment(getBackFace().points[vIndex], vp));
 	}
 
 	return guideSegments;

@@ -107,21 +107,24 @@ export class LineSegment {
 
 export class Polygon {
 	points;
-	edges;
-	numPoints;
 
 	constructor(points) {
 		this.points = points;
 		this.numPoints = this.points.length;
-		this.edges = new Array(this.numPoints);
+	}
+
+	getEdges() {
+		let edges = new Array(this.numPoints);
 
 		for (let point = 0; point < this.points.length; point++) {
 			let currentPoint = this.points[point % this.points.length];
 			let nextPoint = this.points[(point + 1) % this.points.length];
 
 			let currentSegment = new LineSegment(currentPoint, nextPoint);
-			this.edges[point] = currentSegment;
+			edges[point] = currentSegment;
 		}
+
+		return edges;
 	}
 
 	translate(dx, dy) {
@@ -133,7 +136,7 @@ export class Polygon {
 	intersects(cross) {
 		let intersects = [];
 
-		for (let seg of this.edges) {
+		for (let seg of this.getEdges()) {
 			let intersect = LineSegment.intersect(seg, cross);
 			if (intersect != undefined) {
 				intersects.push(intersect);
@@ -144,7 +147,7 @@ export class Polygon {
 	}
 
 	onEdge(point) {
-		for(let edge of this.edges) {
+		for(let edge of this.getEdges()) {
 			if(edge.contains(point)) {
 				return true;
 			}
@@ -194,6 +197,11 @@ export class Square extends Polygon {
 		this.center = center;
 	}
 
+	translate(dx, dy) {
+		super.translate(dx, dy);
+		this.center.translate(dx, dy);
+	}
+	
 	contains(point) {
 		return point.x>this.points[1].x && point.x<this.points[3].x && point.y>this.points[1].y && point.y<this.points[3].y;
 	}

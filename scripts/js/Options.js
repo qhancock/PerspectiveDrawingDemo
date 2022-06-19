@@ -1,4 +1,4 @@
-import { viewer } from "./PerspectiveDrawingDemo.js";
+import { getViewer } from "./PerspectiveDrawingDemo.js";
 
 export const numPerspectives = 3;
 export var perspectiveButtons;
@@ -52,7 +52,7 @@ export function initOptions() {
 	let perspectiveButtonList = new Array(4);
 	for (let persp = 1; persp <= numPerspectives; persp++) {
 		perspectiveButtonList[persp] = document.getElementById(persp + "PP");
-		perspectiveButtonList[persp].addEventListener('click', function () { viewer.setPerspective(persp) });
+		perspectiveButtonList[persp].addEventListener('click', function () { getViewer().setPerspective(persp) });
 	}
 	perspectiveButtons = new OptionButtonSet(perspectiveButtonList);
 
@@ -60,8 +60,8 @@ export function initOptions() {
 	let guidesOn = document.getElementById("guides_on");
 	let guidesOff = document.getElementById("guides_off");
 
-	guidesOn?.addEventListener("click", function () { viewer.toggleGuides(true) });
-	guidesOff?.addEventListener("click", function () { viewer.toggleGuides(false) });
+	guidesOn?.addEventListener("click", function () { getViewer().toggleGuides(true) });
+	guidesOff?.addEventListener("click", function () { getViewer().toggleGuides(false) });
 
 	guidesToggleButtons = new OptionButtonSet([guidesOn, guidesOff]);
 
@@ -69,8 +69,8 @@ export function initOptions() {
 	let xrayOn = document.getElementById("xray_on") ;
 	let xrayOff = document.getElementById("xray_off") ;
 
-	xrayOn?.addEventListener("click", function() {viewer.toggleXray(true)});
-	xrayOff?.addEventListener("click", function() {viewer.toggleXray(false)});
+	xrayOn?.addEventListener("click", function() {getViewer().toggleXray(true)});
+	xrayOff?.addEventListener("click", function() {getViewer().toggleXray(false)});
 
 	xrayToggleButtons = new OptionButtonSet([xrayOn, xrayOff]);
 }
