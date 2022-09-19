@@ -1,28 +1,26 @@
-import { Viewer } from "./Viewer.js";
 import {reset as onePointReset} from "./OnePointPerspective.js";
-import { initOptions, perspectiveButtons, guidesToggleButtons, xrayToggleButtons } from "./Options.js";
+import {reset as twoPointReset} from "./TwoPointPerspective.js";
+// import {reset as threePointReset} from "./ThreePointPerspective.js";
 
-initOptions();
+// initializes options buttons
+import "./Options.js";
+
+// initializes viewer
+import "./Viewer.js"
+
 onePointReset();
-
-var viewer = getViewer();
-export function getViewer() {
-	if(!viewer) {
-		let viewerElement = document.getElementById("viewer");
-		viewer = new Viewer(viewerElement);
-	}
-	return viewer;
-}
+twoPointReset();
 
 let initialPerspective = 1;
-perspectiveButtons.select(perspectiveButtons.buttons[initialPerspective]);
+globalThis.perspectiveButtons.select(globalThis.perspectiveButtons.buttons[initialPerspective-1]);
 viewer.requestNewViewerData(initialPerspective);
 viewer.setPerspective(initialPerspective);
 
-guidesToggleButtons.select(guidesToggleButtons.buttons[false?0:1]);
-viewer.toggleGuides(false);
+viewer.requestNewViewerData(2);
+// viewer.requestNewViewerData(3);
+
+// guidesToggleButtons.select(guidesToggleButtons.buttons[false?0:1]);
+// viewer.toggleGuides(false);
 
 xrayToggleButtons.select(xrayToggleButtons.buttons[false?0:1]);
 viewer.toggleXray(false);
-
-viewer.drawData(viewer.getActiveViewerData());

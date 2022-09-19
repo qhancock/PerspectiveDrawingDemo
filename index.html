@@ -8,12 +8,13 @@
 	<meta charset="UTF-8">
 	<link rel="stylesheet" href="styles/styles.css">
 
+	<script src="https://code.jquery.com/jquery-3.6.0.slim.min.js"></script>
 	<script type="module" src="scripts/js/PerspectiveDrawingDemo.js" defer></script>
 
 </head>
 
 <header>
-	WELCOME! THIS TOOL CAN BE USED TO DEMONSTRATE THE PRINCIPLES ASSOCIATED WITH DRAWING IN PERSPECTIVE.
+	DEMONSTRATION: PRINCIPLES OF PERSPECTIVE
 </header>
 
 <canvas id="viewer">
@@ -21,23 +22,37 @@
 </canvas>
 
 <div id="options">
-	<div class="option" id="perspectives">
-		<label id="perspective_mode_label">PERSPECTIVE MODE:</label>
-		<button class="perspective_button" id="1PP">ONE-POINT</button>
-		<button class="perspective_button" id="2PP">TWO-POINT</button>
-		<button class="perspective_button" id="3PP">THREE-POINT</button>
+	<div id="perspective_buttons" class="option">
+		<span class="label">PERSPECTIVE MODE:</span>
+		<button>ONE-POINT</button>
+		<button>TWO-POINT</button>
+		<button>THREE-POINT</button>
+	</div>
+	
+	<div id="guide_buttons" class="option lower">
+		<span class="label">GUIDES:</span>
+		
+		<span id="1P_guides">
+			<button></button>
+		</span>
+		<span id="2P_guides" hidden>
+			<button></button>
+			<button></button>
+		</span>
+
+		<span id="3P_guides" hidden>
+			<button></button>
+			<button></button>
+			<button></button>
+		</span>
 	</div>
 
-	<div class="option" id="guides">
-		<label id="guides_label">GUIDES:</label>
-		<button class="guides_button" id="guides_on">ON</button>
-		<button class="guides_button" id="guides_off">OFF</button>
+	<div id="xray_buttons" class="option lower">
+		<span class="label">X-RAY:</span>
+		<button id="on">ON</button>
+		<button id="off">OFF</button>
 	</div>
 
-	<div class="option" id="xray">
-		<label id="xray_label">X-RAY:</label>
-		<button class="xray_button" id="xray_on">ON</button>
-		<button class="xray_button" id="xray_off">OFF</button>
-	</div>
+	<button id="reset_button" class="option lower">RESET</button>
 </div>
 </html>
