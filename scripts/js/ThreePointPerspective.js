@@ -1,7 +1,7 @@
 import * as Geometry from "./Geometry.js";
 import getComputedVertices from "./PerspectiveGeometry.js";
 
-var VP1, VP2;
+var VP1, VP2, VP3;
 export var centerPoint;
 
 export function reset() {
