@@ -1,22 +1,28 @@
 import { Point } from "./Geometry.js";
-import { getViewerData as onePointPerspectiveViewerData, reset as onePointReset, face as onePointFace } from "./OnePointPerspective.js";
+import { getViewerData as onePointPerspectiveViewerData, reset as onePointReset, face as onePointHandle, face } from "./OnePointPerspective.js";
+import { getViewerData as twoPointPerspectiveViewerData, reset as twoPointReset, centerSeg as twoPointHandle } from "./TwoPointPerspective.js";
+import { getViewerData as threePointPerspectiveViewerData, reset as threePointReset, centerPoint as threePointHandle} from "./ThreePointPerspective.js";
 
 export class Viewer {
 
 	activePerspective;
-	guides;
 	xray;
 	canvasElement;
 	canvas;
 
-	onePointViewerData;
-	twoPointViewerData;
-	threePointViewerData;
+	getViewerData = [undefined, onePointPerspectiveViewerData, twoPointPerspectiveViewerData, threePointPerspectiveViewerData]
+	resetFunctions = [undefined, onePointReset, twoPointReset, threePointReset]
+	viewerData = []
 
-	edgeColor = 0x000000;
-	xrayEdgeColor = 0x8a8a8a;
-	guideColor = 0x66cdaa;
-	xrayGuideColor = 0xabd1c4;
+	guides = [
+		[false],
+		[false, false],
+		[false, false, false]
+	]
+
+	XRAY_COLOR = "#000000"
+	GUIDE_COLORS = ["#ff8c00", "#69f5ff", "#ffaaff"];
+	XRAY_GUIDE_COLORS = ["#ff8c00", "#69f5ff", "#ffaaff"];
 
 	mouseDragging;
 
@@ -60,96 +66,149 @@ export class Viewer {
 	}
 
 	requestNewViewerData(perspective) {
-
-		switch (perspective) {
-			case 1: {
-				this.onePointViewerData = onePointPerspectiveViewerData();
-				break;
-			}
-			case 2: {
-				// this.twoPointViewerData = twoPointPerspectiveViewerData();
-				break;
-			}
-			case 3: {
-				// this.threePointViewerData = threePointPerspectiveViewerData();
-				break;
-			}
-		}
+		this.viewerData[perspective] = this.getViewerData[perspective]();
 	}
 	
 	getActiveViewerData() {
-		switch (this.activePerspective) {
-			case 1: {
-				return this.onePointViewerData;
-			}
-			case 2: {
-				return this.twoPointViewerData;
-			}
-			case 3: {
-				return this.threePointViewerData;
-			}
-		}
+		return this.viewerData[this.activePerspective]
+	}
+
+	guidesActive(perspective, vpID) {
+		return this.guides[perspective-1][vpID-1]
 	}
 	
-	drawData(viewerData) {
-		
+	drawFigureEdges(viewerData) {
+
+		console.log(viewerData)
 		this.clear();
 		
-		for (let edge of viewerData.edges) {
-			this.drawLine(edge, this.edgeColor);
-		}
-		if (this.guides) {
-			for (let guide of viewerData.guides) {
-				this.drawLine(guide, this.guideColor);
+		let xrayGuides = [];
+		let xrayGuidedEdges = [];
+		let xrayEdges = [];
+		let guides = [];
+		let edges = [];
+		let guidedEdges = [];
+
+		for(let figureEdge of viewerData) {
+
+			if(figureEdge.hasGuide() && figureEdge.xray) {
+				xrayGuides.push(figureEdge);
+				xrayGuidedEdges.push(figureEdge)
 			}
+			if (figureEdge.xray) {
+				xrayEdges.push(figureEdge);
+			}
+			if (figureEdge.hasGuide()) {
+				guides.push(figureEdge);
+				guidedEdges.push(figureEdge);
+			}
+			edges.push(figureEdge);
 		}
+
 		if (this.xray) {
-			for (let xrayEdge of viewerData.xrayEdges) {
-				this.drawLine(xrayEdge, this.xrayEdgeColor);
+			for(let figureEdge of xrayGuides) {
+				if(this.guidesActive(this.activePerspective, figureEdge.vpID)) {
+					this.drawXrayGuide(figureEdge);
+				}
+			}
+			for(let figureEdge of xrayGuidedEdges) {
+				if(this.guidesActive(this.activePerspective, figureEdge.vpID)) {
+					this.drawXrayGuidedEdge(figureEdge);
+				}
+			}
+			for(let figureEdge of xrayEdges) {
+				if(!this.guidesActive(this.activePerspective, figureEdge.vpID)) {
+					this.drawXrayEdge(figureEdge);
+				}
 			}
 		}
-		if (this.xray && this.guides) {
-			for (let xrayGuide of viewerData.xrayGuides) {
-				this.drawLine(xrayGuide, this.xrayGuideColor);
+		for(let figureEdge of guides) {
+			if(this.guidesActive(this.activePerspective, figureEdge.vpID) && !figureEdge.xray) {
+				this.drawGuide(figureEdge);
+			}
+		}
+		for(let figureEdge of edges) {
+			if((!figureEdge.hasGuide || !this.guidesActive(this.activePerspective, figureEdge.vpID)) && !figureEdge.xray && !figureEdge.front){
+				this.drawEdge(figureEdge);
+			}
+		}
+		for (let figureEdge of guidedEdges) {
+			if(this.guidesActive(this.activePerspective, figureEdge.vpID) && !figureEdge.xray && !figureEdge.front) {
+				this.drawGuidedEdge(figureEdge);
+			}
+		}
+		for(let figureEdge of edges) {
+			if((!figureEdge.hasGuide || !this.guidesActive(this.activePerspective, figureEdge.vpID)) && !figureEdge.xray && figureEdge.front){
+				this.drawEdge(figureEdge);
+			}
+		}
+		for (let figureEdge of guidedEdges) {
+			if(this.guidesActive(this.activePerspective, figureEdge.vpID) && !figureEdge.xray && figureEdge.front) {
+				this.drawGuidedEdge(figureEdge);
 			}
 		}
 	}
 
-	drawLine(lineSegment, color) {
+	drawEdge(figureEdge) {
+		this.drawSegment(figureEdge);
+	}
+	drawGuidedEdge(figureEdge) {
+		this.drawSegment(figureEdge)
+		this.drawSegment(figureEdge, this.GUIDE_COLORS[figureEdge.vpID-1], true, false);
+	}
+	drawXrayEdge(figureEdge) {
+		this.drawSegment(figureEdge, this.XRAY_COLOR, false, true);
+	}
+	drawXrayGuidedEdge(figureEdge) {
+		this.drawXrayEdge(figureEdge);
+		this.drawSegment(figureEdge, this.XRAY_GUIDE_COLORS[figureEdge.vpID-1], true, true);
+	}
+	drawGuide(figureEdge) {
+		this.drawXrayEdge(figureEdge.guide);
+		this.drawSegment(figureEdge.guide, this.GUIDE_COLORS[figureEdge.vpID-1], true, true);
+	}
+	drawXrayGuide(figureEdge) {
+		this.drawSegment(figureEdge.guide, this.XRAY_COLOR, false, true);
+		this.drawSegment(figureEdge.guide, this.XRAY_GUIDE_COLORS[figureEdge.vpID-1], true, true);
+	}
 
-		this.canvas.strokeStyle = new Number(color).toString();
-
+	drawSegment(lineSegment, color = "#000000", guide = false, dotted = false) {
 		this.canvas.beginPath();
+
+		this.canvas.strokeStyle = color;
+		this.canvas.lineWidth = 5;
+		if(guide) {
+			this.canvas.lineWidth = 3;
+		}
+		if(dotted) {
+			this.canvas.setLineDash([5, 10]);
+		} else {
+			this.canvas.setLineDash([]);
+		}
+		this.canvas.lineCap = "round";
 		this.canvas.moveTo(lineSegment.start.x, lineSegment.start.y);
 		this.canvas.lineTo(lineSegment.end.x, lineSegment.end.y);
 		this.canvas.stroke();
-
+		this.canvas.closePath();
 	}
-
-	drawPolygon(polygon, color) {
-		for (let seg of polygon.segments) {
-			this.drawLine(seg, color);
-		}
-	}
-
 
 	moveActiveHandle(dx, dy) {
 		switch (this.activePerspective) {
 			case 1: {
-				onePointFace.translate(dx, dy);
+				onePointHandle.translate(dx, dy);
 				break;
 			}
 			case 2: {
-				// this.twoPointFaceHandle.translate(dx, dy);
+				twoPointHandle.translate(dx, dy);
 				break;
 			}
 			case 3: {
-				// this.threePointFaceHandle.translate(dx, dy);
+				// threePointFaceHandle.translate(dx, dy);
 				break;
 			}
 		}
 		this.requestNewViewerData(this.activePerspective);
-		this.drawData(this.getActiveViewerData());
+		this.drawFigureEdges(this.getActiveViewerData());
 	}
 
 	setPerspective(perspective) {
@@ -159,19 +218,15 @@ export class Viewer {
 			return;
 		}
 		this.activePerspective = perspective;
-		this.drawData(this.getActiveViewerData());
+		this.drawFigureEdges(this.getActiveViewerData());
 
 	}
 
-	toggleGuides(on) {
+	toggleGuides(perspective, vp) {
 
-		//guard clause exits if no change
-		if (on == this.guides) {
-			return;
-		}
-		this.guides = on;
-
-		this.drawData(this.getActiveViewerData());
+		this.guides[perspective-1][vp] = !this.guides[perspective-1][vp]
+		this.drawFigureEdges(this.getActiveViewerData());
+	
 	}
 
 	toggleXray(on) {
@@ -182,6 +237,16 @@ export class Viewer {
 		}
 		this.xray = on;
 
-		this.drawData(this.getActiveViewerData());
+		this.drawFigureEdges(this.getActiveViewerData());
+	}
+
+	reset(perspective = this.activePerspective) {
+		this.resetFunctions[perspective]();
+		this.requestNewViewerData(perspective)
+		if(this.activePerspective == perspective) {
+			this.drawFigureEdges(this.getActiveViewerData())
+		}
 	}
 }
+
+globalThis.viewer = new Viewer($("#viewer")[0]);
