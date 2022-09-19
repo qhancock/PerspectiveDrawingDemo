@@ -29,10 +29,9 @@ export class Point {
 	}
 
 	static distSq(a, b) {
-		let dx = Math.abs(Point.dx(a, b));
-		let dy = Math.abs(Point.dy(a, b));
-
-		return Math.pow(dx, 2) + Math.pow(dy, 2);
+		let dx = Point.dx(a, b);
+		let dy = Point.dy(a, b);
+		return  dx*dx + dy*dy;
 	}
 
 	static distance(a, b) {
@@ -40,17 +39,53 @@ export class Point {
 	}
 }
 
-export class LineSegment {
+export class Line {
+
+	point;
+	slope;
+	iSlope = NaN;
+
+	constructor(point, slope) {
+
+		this.point = point;
+		this.slope = slope;
+		try {
+			this.iSlope = 1/this.slope;
+		} catch(e) {}
+
+	}
+
+	getY(x) {
+		return this.slope * (x - this.point.x) + this.point.y;
+	}
+
+	getX(y) { 
+		return this.iSlope * (y - this.point.y) + this.point.x;
+	}
+
+	xDist(point) {
+		return this.getX(point.y) - point.x;
+	}
+
+	yDist(point) {
+		return this.getY(point.x) - point.y;
+	}
+
+}
+
+export class LineSegment extends Line {
 	start;
 	end;
 
 	constructor(start, end) {
+		let slope;
+		try {
+			slope =  (end.y - start.y) / (end.x - start.x)
+		} catch(e) {}
+		super(start, slope)
+
 		this.start = start;
 		this.end = end;
-	}
-
-	slope() {
-		return (this.end.y - this.start.y) / (this.end.x - this.start.x);
 	}
 
 	contains(point) {
@@ -102,6 +137,10 @@ export class LineSegment {
 
 			return new Point(intersectX, intersectY);
 		}
+	}
+
+	hasGuide() {
+		return false;
 	}
 }
 
