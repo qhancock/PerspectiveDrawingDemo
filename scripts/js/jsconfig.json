@@ -1,0 +1,13 @@
+{
+	"compilerOptions": {
+		"module": "CommonJS",
+		"target": "ES6",
+		"lib": ["ES6", "DOM", "ES2016"],
+		"checkJs": true
+	},
+	"typeAcquisition": {
+		"include": [
+			"jquery"
+		]
+	}
+}
