@@ -1,9 +1,13 @@
-import { getViewer } from "./PerspectiveDrawingDemo.js";
 
-export const numPerspectives = 3;
-export var perspectiveButtons;
-export var guidesToggleButtons;
-export var xrayToggleButtons;
+function setSelectedButtonAttributes(button) {
+	button.style.border = "4px solid black";
+	button.style.fontWeight = "500";
+}
+
+function setDeselectedButtonAttributes(button) {
+	button.style.border = "2px solid black";
+	button.style.fontWeight = "300";
+}
 
 class OptionButtonSet {
 	selectedButton;
@@ -26,51 +30,80 @@ class OptionButtonSet {
 			return;
 		}
 		if (this.selectedButton != null) {
-			this.setDeselectedButtonAttributes(this.selectedButton);
+			setDeselectedButtonAttributes(this.selectedButton);
 		}
 
 		this.selectedButton = selectedButton;
 
-		this.setSelectedButtonAttributes(this.selectedButton);
-	}
-
-	setSelectedButtonAttributes(button) {
-		button.style.border = "4px solid black";
-		button.style.fontWeight = "500";
-	}
-	setDeselectedButtonAttributes(button) {
-		button.style.border = "2px solid black";
-		button.style.fontWeight = "300";
+		setSelectedButtonAttributes(this.selectedButton);
 	}
 
 }
 
-//initialize perspective button array
-export function initOptions() {
+//intialize perspective options
+globalThis.perspectiveButtons = new OptionButtonSet(
+	$("#perspective_buttons button").toArray()
+);
 
-	//intialize perspective options
-	let perspectiveButtonList = new Array(4);
-	for (let persp = 1; persp <= numPerspectives; persp++) {
-		perspectiveButtonList[persp] = document.getElementById(persp + "PP");
-		perspectiveButtonList[persp].addEventListener('click', function () { getViewer().setPerspective(persp) });
-	}
-	perspectiveButtons = new OptionButtonSet(perspectiveButtonList);
+globalThis.guideButtonSets = $("#guide_buttons span:not(#guide_buttons span:first-of-type)").toArray()
 
-	//initialize guides options
-	let guidesOn = document.getElementById("guides_on");
-	let guidesOff = document.getElementById("guides_off");
+for (let buttonIndex in globalThis.perspectiveButtons.buttons) {
 
-	guidesOn?.addEventListener("click", function () { getViewer().toggleGuides(true) });
-	guidesOff?.addEventListener("click", function () { getViewer().toggleGuides(false) });
+	globalThis.perspectiveButtons.buttons[buttonIndex].addEventListener(
+		"click", function() {
 
-	guidesToggleButtons = new OptionButtonSet([guidesOn, guidesOff]);
+			for (let guideSet of globalThis.guideButtonSets) {
+				//hides the set if it doesn't match the perspective mode
+				guideSet.hidden = !guideSet.id.startsWith(String(parseInt(buttonIndex)+1))
+			}
 
-	//initialize xray options
-	let xrayOn = document.getElementById("xray_on") ;
-	let xrayOff = document.getElementById("xray_off") ;
+			$("#" + (parseInt(buttonIndex)+1) + "P_guides").get(0).hidden = false
+			globalThis.viewer.setPerspective(parseInt(buttonIndex)+1);
+		}
+	);
 
-	xrayOn?.addEventListener("click", function() {getViewer().toggleXray(true)});
-	xrayOff?.addEventListener("click", function() {getViewer().toggleXray(false)});
-
-	xrayToggleButtons = new OptionButtonSet([xrayOn, xrayOff]);
 }
+
+//initialize xray options
+
+$("#xray_buttons button").on(
+	"click", function() {
+		globalThis.viewer.toggleXray(this.id == "on")
+	}
+)
+
+
+//initializes guide button options
+
+$("#guide_buttons button").on(
+	"click", function() {
+
+		let toggledBorderStyle = "4px solid black"
+		let toggled = this.style.border == toggledBorderStyle
+
+		if(toggled) {
+			this.style.border = 2 + toggledBorderStyle.substring(1)
+		} else {
+			this.style.border = toggledBorderStyle
+		}
+
+		globalThis.viewer.toggleGuides(
+
+			//perspective number (parent span's id's first character)
+			parseInt(this.parentElement.id.charAt(0)),
+
+			//button number
+			Array.from(this.parentNode.children).indexOf(this)
+		)
+	}
+)
+
+globalThis.xrayToggleButtons = new OptionButtonSet(
+	$("#xray_buttons button").toArray()
+);
+
+$("#reset_button").on(
+	"click", function() {
+		globalThis.viewer.reset()
+	}
+)
