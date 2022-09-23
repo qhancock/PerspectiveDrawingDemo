@@ -11,12 +11,6 @@ export function reset() {
 	VP1 = viewer.getCenter().getRelativePoint(-viewer.getWidth()/3, -viewer.getHeight()/6);
 	VP2 = VP1.getRelativePoint((2/3) * viewer.getWidth(), 0);
 
-	// VP1 = viewer.getCenter();
-	// VP2 = viewer.getCenter().getRelativePoint(50, 50);
-
-	// VP1 = viewer.getCenter().getRelativePoint(-viewer.getWidth()/3, -viewer.getHeight()/3);
-	// VP2 = viewer.getCenter().getRelativePoint(viewer.getWidth()/3, viewer.getHeight()/3);
-
 	let sideLength = Math.sqrt(viewer.getArea())/10;
 	let segCenter = viewer.getCenter().getRelativePoint(0, (1/6)*viewer.getHeight());
 	let centerSegTop = segCenter.getRelativePoint(0, -sideLength/2);
@@ -32,7 +26,7 @@ function getCenterSegBottom() {
 }
 
 function getVP1computedVertices() {
-	let VP1computedVertices = getComputedVertices(centerSeg.length(), VP1, [centerSeg.start, centerSeg.end], 0.9625);
+	let VP1computedVertices = getComputedVertices(centerSeg.length(), VP1, [centerSeg.start, centerSeg.end], 0.965);
 
 	return {
 		"top" : VP1computedVertices[0],
@@ -42,7 +36,7 @@ function getVP1computedVertices() {
 }
 
 function getVP2computedVertices() {
-	let VP2computedVertices = getComputedVertices(centerSeg.length(), VP2, [centerSeg.start, centerSeg.end], 0.9625);
+	let VP2computedVertices = getComputedVertices(centerSeg.length(), VP2, [centerSeg.start, centerSeg.end], 0.965);
 
 	return {
 		"top" : VP2computedVertices[0],

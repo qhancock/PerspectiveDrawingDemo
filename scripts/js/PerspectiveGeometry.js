@@ -1,4 +1,5 @@
 import * as Geometry from "./Geometry.js";
+import { face } from "./OnePointPerspective.js";
 
 function computedVertexRayScalar(sideLength, vp, faceVertex) {
 	let sideFovRatio = 2/Math.PI * Math.atan(sideLength/(Geometry.Point.distance(faceVertex, vp)));
@@ -14,15 +15,32 @@ function computedComputedVertexRayScalar(sideLength, vp, faceVertices) {
 	return scalar/faceVertices.length;
 }
 
-export default function getComputedVertices(sideLength, vp, faceVertices, adjustmentRatio=1, adjustmentBump=0) {
+export function getComputedVertex(sideLength, vp, faceVertex, scalar=undefined, adjustmentRatio = 1) {
+	
+	if(!scalar) {
+		scalar = computedVertexRayScalar(sideLength, vp, faceVertex)
+		scalar*=adjustmentRatio
+	}
 
-	let scalar = computedComputedVertexRayScalar(sideLength, vp, faceVertices);
-	scalar*=adjustmentRatio;
+	return vp.getRelativePoint(scalar*Geometry.Point.dx(vp, faceVertex), scalar*Geometry.Point.dy(vp, faceVertex));
+
+}
+
+export default function getComputedVertices(sideLength, vp, faceVertices, adjustmentRatio=1, useUnique=false, adjustmentBump=0) {
+
+	let scalar;
+	if(!useUnique) {
+		scalar = computedComputedVertexRayScalar(sideLength, vp, faceVertices);
+		scalar*=adjustmentRatio;
+	}
+
 	let computedVertices = [];
 
 	for(let faceVertex of faceVertices) {
-		let computedVertex = vp.getRelativePoint(scalar*Geometry.Point.dx(vp, faceVertex), scalar*Geometry.Point.dy(vp, faceVertex));
-		computedVertices.push(computedVertex);
+		if(useUnique) {
+			scalar = computedVertexRayScalar(sideLength, vp, faceVertex)
+		}
+		computedVertices.push(getComputedVertex(sideLength, vp, faceVertex, scalar));
 	}
 
 	return computedVertices;

@@ -116,7 +116,7 @@ body {
 	background-color: rgb(105, 245, 255);
 }
 #guide_buttons > span > button:nth-of-type(3) {
-	background-color: rgb(255, 170, 255);
+	background-color: rgb(220, 106, 255)
 }
 
 #xray_buttons {
@@ -124,5 +124,5 @@ body {
 }
 
 button#reset_button {
-	background-color: rgb(207, 50, 255)
+	background-color: rgb(255, 170, 255);
 }

@@ -21,8 +21,8 @@ export class Viewer {
 	]
 
 	XRAY_COLOR = "#000000"
-	GUIDE_COLORS = ["#ff8c00", "#69f5ff", "#ffaaff"];
-	XRAY_GUIDE_COLORS = ["#ff8c00", "#69f5ff", "#ffaaff"];
+	GUIDE_COLORS = ["#ff8c00", "#69f5ff", "#dc6aff"];
+	XRAY_GUIDE_COLORS = ["#ff8c00", "#69f5ff", "#dc6aff"];
 
 	mouseDragging;
 
@@ -203,7 +203,7 @@ export class Viewer {
 				break;
 			}
 			case 3: {
-				// threePointFaceHandle.translate(dx, dy);
+				threePointHandle.translate(dx, dy);
 				break;
 			}
 		}
