@@ -10,8 +10,13 @@ export function reset() {
 	let viewer = globalThis.viewer;
 	let portRadius = (viewer.getWidth() < viewer.getHeight() ? viewer.getWidth() : viewer.getHeight()) * (1/2);
 
+	//top right
 	VPS[1] = viewer.getCenter().getRelativePoint(Math.cos(Math.PI/6) * portRadius, -Math.sin(Math.PI/6) * portRadius).getRelativePoint(0, -portRadius/5)
+	
+	//top left
 	VPS[2] = viewer.getCenter().getRelativePoint(Math.cos(5 * Math.PI/6) * portRadius, -Math.sin(5 * Math.PI/6) * portRadius).getRelativePoint(0, -portRadius/5)
+	
+	//bottom
 	VPS[3] = viewer.getCenter().getRelativePoint(Math.cos(3 * Math.PI/2) * portRadius, -Math.sin(3 * Math.PI/2) * portRadius).getRelativePoint(0, -portRadius/5)
 
 	sideLength = Math.sqrt(viewer.getArea())/12;
@@ -74,14 +79,40 @@ function getOuterData(frontPoints) {
 	}
 }
 
+function getBackData(outerData) {
+	if (!outerData) {
+		outerData = getOuterData();
+	}
+
+	let	backBottomCrossConnect1 = new Geometry.LineSegment(outerData.outerPoints[1], VPS[1]);
+	let backBottomCrossConnect2 = new Geometry.LineSegment(outerData.outerPoints[2], VPS[2]);
+
+	let backPoint = Geometry.LineSegment.intersect(backBottomCrossConnect1, backBottomCrossConnect2);
+
+	let backEdges = [undefined]
+
+	for(let vp = 1; vp<=3; vp++) {
+		let backSeg = new Geometry.LineSegment(outerData.outerPoints[vp], backPoint);
+		let backEdge = new PerspectiveGeometry.FigureEdge(backSeg, VPS[vp], vp)
+		backEdges.push(backEdge);
+	}
+
+	return {
+		"backPoint" : backPoint,
+		"backEdges" : backEdges
+	}
+}
+
 export function getViewerData() {
 	let x = getFrontSegs().slice(1)
 	let outerSegSets = getOuterData().outerSegSets;
+	let backData = getBackData().backEdges;
 	for(let i = 1; i<=3; i++) {
 		let set = outerSegSets[i]
 		for(let seg of set) {
 			x.push(seg)
 		}
+		x.push(backData[i]);
 	}
 
 	return x
