@@ -63,7 +63,7 @@ function getOuterData(frontPoints) {
 		let crossLine1 = new Geometry.LineSegment(VPS[(vp+1) % 3 + 1], frontPoints[(vp+2) % 3 + 1]);
 		let crossLine2 = new Geometry.LineSegment(VPS[(vp+2) % 3 + 1], frontPoints[(vp+1) % 3 + 1]);
 
-		console.log(crossLine1, crossLine2)
+		// console.log(crossLine1, crossLine2)
 
 		outerPoints.push(Geometry.LineSegment.intersect(crossLine1, crossLine2));
 
@@ -103,17 +103,122 @@ function getBackData(outerData) {
 	}
 }
 
-export function getViewerData() {
-	let x = getFrontSegs().slice(1)
-	let outerSegSets = getOuterData().outerSegSets;
-	let backData = getBackData().backEdges;
-	for(let i = 1; i<=3; i++) {
-		let set = outerSegSets[i]
-		for(let seg of set) {
-			x.push(seg)
-		}
-		x.push(backData[i]);
+function getFaces(frontSegs, outerSegSets, backEdges) {
+
+	let frontPoints;
+	if(!frontSegs) {
+		frontPoints = getFrontPoints()
+		frontSegs = getFrontSegs(frontPoints);
 	}
 
-	return x
+	let outerData
+	if(!outerSegSets) {
+		if(!frontPoints) {
+			frontPoints = getFrontPoints()
+		}
+		outerData = getOuterData(frontPoints)
+		outerSegSets = outerData.outerSegSets
+	}
+
+	if(!backEdges){
+		if(!outerData) {
+			outerData = getOuterData(frontPoints)
+		}
+		backEdges = getBackData(outerData).backEdges;
+	}
+
+	let frontRight = new PerspectiveGeometry.FigureFace([frontSegs[3], frontSegs[1], outerSegSets[2][1], outerSegSets[2][0]]);
+	let frontLeft = new PerspectiveGeometry.FigureFace([frontSegs[3], frontSegs[2], outerSegSets[1][1], outerSegSets[1][0]]);
+	let frontTop = new PerspectiveGeometry.FigureFace([frontSegs[1], frontSegs[2], outerSegSets[3][1], outerSegSets[3][0]]);
+	let backRight = new PerspectiveGeometry.FigureFace([backEdges[3], backEdges[2], outerSegSets[2][0], outerSegSets[3][1]]);
+	let backLeft = new PerspectiveGeometry.FigureFace([backEdges[3], backEdges[1], outerSegSets[3][0], outerSegSets[1][1]]);
+	let backBottom = new PerspectiveGeometry.FigureFace([backEdges[1], backEdges[2], outerSegSets[1][0], outerSegSets[2][1]]);
+	
+	return {
+		"frontRight" : frontRight,
+		"frontLeft" : frontLeft,
+		"frontTop": frontTop,
+		"backRight" : backRight,
+		"backLeft" : backLeft,
+		"backBottom" : backBottom
+	}
+}
+
+function setFaceVisibility(frontPoints, faces) {
+	let l_bound = new Geometry.LineSegment(VPS[2], VPS[3])
+	let r_bound = new Geometry.LineSegment(VPS[3], VPS[1])
+	let t_bound = new Geometry.LineSegment(VPS[1], VPS[2])
+
+	if(!frontPoints) {
+		frontPoints = getFrontPoints()
+	}
+	if(!faces) {
+		faces = getFaces()
+	}
+
+	faces["backRight"].visible = false
+	faces["backLeft"].visible = false
+	faces["backBottom"].visible = false
+
+	if(t_bound.yDist(centerPoint)>0) {
+		faces["frontTop"].visible = false;
+	}
+	if(t_bound.yDist(frontPoints[3])>0) {
+		faces["backBottom"].visible = true;
+	}
+
+	if(r_bound.yDist(centerPoint)<0) {
+		faces["frontRight"].visible = false;
+	}
+	if(r_bound.yDist(frontPoints[2])<0) {
+		faces["backLeft"].visible = true;
+	}
+
+	if(l_bound.yDist(centerPoint)<0) {
+		faces["frontLeft"].visible = false;
+	}
+	if(l_bound.yDist(frontPoints[1])<0) {
+		faces["backRight"].visible = true;
+	}
+
+	return faces
+}
+
+export function getViewerData() {
+	let frontPoints = getFrontPoints()
+	let frontSegs = getFrontSegs(frontPoints)
+	let outerData = getOuterData(frontPoints)
+	let backData = getBackData(outerData)
+	let figureFaces = getFaces(frontSegs, outerData.outerSegSets, backData.backEdges)
+	figureFaces = setFaceVisibility(frontPoints, figureFaces)
+
+	console.log(figureFaces)
+
+	let viewerData = []
+	for(let figureFace in figureFaces) {
+		let currentFigureFace = figureFaces[figureFace];
+		if (currentFigureFace.visible) {
+			for(let figureEdge of currentFigureFace.figureEdges) {
+				let presence = viewerData.indexOf(figureEdge)
+				if(presence==-1) {
+					viewerData.push(figureEdge);
+				} else {
+					viewerData[presence].front = true
+				}
+			}
+		}
+	}
+	for(let figureFace in figureFaces) {
+		let currentFigureFace = figureFaces[figureFace];
+		if (!currentFigureFace.visible) {
+			for(let figureEdge of currentFigureFace.figureEdges) {
+				if(viewerData.indexOf(figureEdge)==-1) {
+					figureEdge.xray = true
+					viewerData.push(figureEdge);
+				}
+			}
+		}
+	}
+
+	return viewerData
 }

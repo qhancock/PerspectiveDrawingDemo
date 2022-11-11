@@ -79,7 +79,7 @@ export class Viewer {
 	
 	drawFigureEdges(viewerData) {
 
-		console.log(viewerData)
+		// console.log(viewerData)
 		this.clear();
 		
 		let xrayGuides = [];
